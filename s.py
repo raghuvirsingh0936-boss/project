@@ -17,7 +17,7 @@ with st.sidebar:
 if opt=="Home":
 
     st.title("Indian Tourism Trend Analysis")
-    image_list=['img1.png','img2.png','img3.png','img6.png']
+    image_list=['img1.png','img2.png','img3.png','img4.png,'img6.png']
     st.image(image=image_list,width=100)
     st.markdown("""
                 ### Explore Tourism Trends Accross India
