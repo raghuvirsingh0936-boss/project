@@ -1,0 +1,6 @@
+streamlit
+seaborn
+matplotlib.pyplot
+from streamlit_option_menu
+plotly.express
+pandas
