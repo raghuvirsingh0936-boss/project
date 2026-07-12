@@ -12,7 +12,7 @@ df.info()
 st.set_page_config(page_title="apna kmm ", page_icon="in", layout="wide")
 
 with st.sidebar:
-    opt=option_menu("Main Menu", ["Home","Dataset","Processing","Visualization","About"],icons=["house","table","gear","bar-chart","person"],menu_icon="cast",default_index=0)
+    opt=option_menu("Main Menu", ["Home","Dataset","Processing","Visualization","🦠 COVID-19 Impact Analysis","About"],icons=["house","table","gear","bar-chart","person"],menu_icon="cast",default_index=0)
 
 if opt=="Home":
 
@@ -108,153 +108,341 @@ elif opt=="Visualization":
         
 
 
-    t1,t2,t3=st.tabs(["Streamlit","Plotly","Seaborn"])
+    t1,t2,=st.tabs(["Tourism","Monuments",])
 
     with t1:
-        state = df["state"].value_counts().reset_index()
-        state.columns = ["State", "Count"]
+            
+     state = df["state"].value_counts().reset_index()
+     state.columns = ["State", "Count"]
+     fig1= px.bar( state, x="State", y="Count", color="Count", title="Tourist Places by State", text_auto=True)
+     #st.plotly_chart(fig1, use_container_width=True) 
+            
+     zone = df["zone"].value_counts().reset_index()
+     zone.columns = ["Zone", "Count"]
+     fig2= px.bar(zone,x="Zone",y="Count",color="Count",title="Tourist Places by Zone",text_auto=True)
+     #st.plotly_chart(fig2, use_container_width=True)    
+   
+     types = df["type"].value_counts().reset_index()
+     types.columns = ["Type", "Count"]
+     fig3= px.pie(types, names="Type",values="Count",hole=0.5,title="Tourist Place Categories")
+     #st.plotly_chart(fig, use_container_width=True)
+      
+     rating = df.groupby("state")["google_review_rating"].mean().reset_index()
+     fig6= px.bar(rating,x="state",y="google_review_rating",color="google_review_rating",title="Average Rating by State")
+     #st.plotly_chart(fig, use_container_width=True)
+      
+     sig = df["significance"].value_counts().reset_index()
+     sig.columns = ["Significance", "Count"]
 
-        st.subheader("Tourist Places by State")
-        st.bar_chart(state, x="State", y="Count")
-        
-        type_df = df["type"].value_counts().reset_index()
-        type_df.columns = ["Type", "Count"]
+     fig4 = px.bar(sig,x="Significance",y="Count",color="Count",title="Tourist Place Significance")
+     #st.plotly_chart(fig4, use_container_width=True) 
+     
+     
+     best = df["best_time_to_visit"].value_counts().reset_index()
+     best.columns = ["Season", "Count"]
+     fig5= px.bar(
+    best,
+    x="Season",
+    y="Count",
+    color="Count",
+    title="Best Time to Visit"
+)
+     #st.plotly_chart(fig, use_container_width=True)
+     
+     
 
-        st.subheader("Tourist Places by Type")
-        st.bar_chart(type_df, x="Type", y="Count")
+     dslr_sig = (
+     df.groupby(["significance", "dslr_allowed"])
+      .size()
+      .reset_index(name="Count")
+)
 
-        
-        zone = df["zone"].value_counts().reset_index()
-        zone.columns = ["Zone", "Count"]
-        st.subheader("Distribution of Tourist Places by Zone")
-        st.bar_chart(zone, x="Zone", y="Count")
-        
-        
-        state = df["state"].value_counts().reset_index()
-        state.columns = ["State", "Count"]
-        st.subheader("Number of Tourist Places by State")
-        st.bar_chart(state, x="State", y="Count")
+     fig7 = px.bar(dslr_sig,x="significance",y="Count",color="dslr_allowed",barmode="group",text="Count",color_discrete_map={    "Yes": "#2E8B57",    "No": "#E74C3C"
+    },
+    title="📷 DSLR Permission by Significance"
+)
 
+     fig7.update_layout(template="plotly_white",title_x=0.5,xaxis_title="Significance",yaxis_title="Number of Tourist Places",height=500)
 
-        df1= df1[
-        ~df1["Name of the Monument "].isin(["Total", "Grand Total"])
-     ]
-        circle = df1.groupby("Circle")["Domestic-2019-20"].sum().reset_index()
+    # st.plotly_chart(fig, use_container_width=True)
+     
+     
+     fig8= px.box(df, x="state", y="entrance_fee_in_inr", color="state", title="💰 Entrance Fee Distribution by State")
+     fig8.update_layout(template="plotly_white",title_x=0.5,height=600,showlegend=False,xaxis_tickangle=-45)
+    #st.plotly_chart(fig, use_container_width=True)
+    
+     col1, col2 = st.columns(2, gap="large")
 
-        st.subheader("Domestic Visitors by Circle")
+     with col1:
+      st.plotly_chart(fig1, use_container_width=True)
+      st.divider()
+     with col2:
+      st.plotly_chart(fig2, use_container_width=True)
+      st.divider()
+     col3, col4 = st.columns(2, gap="large")
 
-        st.area_chart( circle, x="Circle", y="Domestic-2019-20")
-
-        st.subheader("Domestic vs Foreign Tourist Visitors")
-        st.scatter_chart(df1,x="Domestic-2019-20",y="Foreign-2019-20")
+     with col3:
+      st.plotly_chart(fig3, use_container_width=True)
+      st.divider()
+     with col4:
+      st.plotly_chart(fig4, use_container_width=True)
+      st.divider() 
+     col5, col6 = st.columns(2, gap="large")  
+     with col5:
+      st.plotly_chart(fig5, use_container_width=True)
+      st.divider()
+     with col6:
+      st.plotly_chart(fig6, use_container_width=True)
+      st.divider()
+     col7, col8 = st.columns(2, gap="large")
+     with col7:
+      st.plotly_chart(fig7, use_container_width=True)
+      st.divider()
+     with col8:
+      st.plotly_chart(fig8, use_container_width=True)
+      st.divider() 
+      
     with t2:
      df1= df1[
      ~df1["Name of the Monument "].isin(["Total", "Grand Total"])
      ]
-     fig = px.scatter(
-    df,
-    x="google_review_rating",
-    y="number_of_google_review_in_lakhs",
-    color="zone",
-    hover_name="name",
-    title="Google Rating vs Number of Reviews"
-     )
-     st.plotly_chart(fig, use_container_width=True)
-     
-     top = df.sort_values("google_review_rating", ascending=False).head(10)
-
-     fig = px.bar(
-    top,
-    x="name",
-    y="google_review_rating",
-    color="google_review_rating",
-    title="Top 10 Highest Rated Tourist Places"
-)
-
-     st.plotly_chart(fig, use_container_width=True)
-     
      top = df1.sort_values("Domestic-2019-20", ascending=False).head(10)
 
-     fig = px.bar( top,x="Name of the Monument ",y="Domestic-2019-20",color="Domestic-2019-20",title="Top 10 Monuments by Domestic Visitors")
-
-     st.plotly_chart(fig, use_container_width=True)
-     
-     
-     
-     circle = df1.groupby("Circle")["Domestic-2019-20"].sum().reset_index()
-     fig = px.pie(circle,names="Circle",values="Domestic-2019-20",title="Share of Domestic Visitors")
-
-     st.plotly_chart(fig)
-     
-     
-     top = df1.sort_values("Domestic-2019-20", ascending=False).head(10)
-
-     fig = px.bar(
+     fig1= px.bar(
     top,
-    x="Name of the Monument ",
-    y=["Domestic-2019-20","Domestic-2020-21"],
-    barmode="group",
-    title="COVID Impact on Tourism"
-      )
-
-     st.plotly_chart(fig)
-
-     fig = px.scatter(
-     df1,
     x="Domestic-2019-20",
-    y="Foreign-2019-20",
-    color="Circle",
-    hover_name="Name of the Monument ",
-    title="Domestic vs Foreign Visitors"
-)
-    with t3:
-        
-     zone = df["zone"].value_counts().reset_index()
-     zone.columns = ["Zone", "Count"]
-
-     plt.figure(figsize=(8,5))
-     sns.barplot(data=zone, x="Zone", y="Count")
-
-     plt.title("Zone-wise Distribution of Tourist Places")
-
-     st.pyplot(plt)  
-        
-     plt.figure(figsize=(8,5))
-
-     sns.boxplot(
-    data=df,
-    x="zone",
-    y="google_review_rating"
+    y="Name of the Monument ",
+    orientation="h",
+    color="Domestic-2019-20",
+    color_continuous_scale="Turbo",
+    text="Domestic-2019-20",
+    title="🏛 Top 10 Monuments by Domestic Visitors"
 )
 
-     plt.title("Google Rating Distribution by Zone")
+     fig1.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    height=600,
+    coloraxis_showscale=False)
 
-     st.pyplot(plt)  
-        
-        
-        
-     plt.figure(figsize=(12,6))
 
-     sns.countplot(
-    data=df1,
-    x="Circle"
+    # st.plotly_chart(fig1, use_container_width=True)
+
+     top = df1.sort_values("Foreign-2019-20", ascending=False).head(10)
+
+     fig2= px.bar(
+    top,
+    x="Foreign-2019-20",
+    y="Name of the Monument ",
+    orientation="h",
+    color="Foreign-2019-20",
+    color_continuous_scale="Viridis",
+    text="Foreign-2019-20",
+    title="🌍 Top 10 Monuments by Foreign Visitors"
 )
+     
+     fig2.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    height=600,
+    coloraxis_showscale=False)
 
-     plt.xticks(rotation=90)
-     plt.title("Number of Monuments in Each Circle")
-     st.pyplot(plt)     
+
+
+#st.plotly_chart(fig, use_container_width=True)
+
+     col11, col22 = st.columns(2, gap="large")
+
+     with col11:
+      st.plotly_chart(fig1, use_container_width=True)
+      st.divider()
+     with col22:
+      st.plotly_chart(fig2, use_container_width=True)
+      st.divider()
+
+     fig3= px.scatter(df1,x="Domestic-2019-20", y="Foreign-2019-20", color="Circle", hover_name="Name of the Monument ", size="Domestic-2019-20", title="📈 Domestic vs Foreign Visitors")
+     #st.plotly_chart(fig, use_container_width=True)
+
+     circle = df1["Circle"].value_counts().reset_index()
+     circle.columns = ["Circle", "Count"]
+     fig4= px.pie(circle,names="Circle",values="Count",hole=0.55,title="🗺 Monuments by Circle")
+
+     #st.plotly_chart(fig, use_container_width=True)
+
+     col12, col23 = st.columns(2, gap="large")
+
+     with col12:
+      st.plotly_chart(fig3, use_container_width=True)
+      st.divider()
+     with col23:
+      st.plotly_chart(fig4, use_container_width=True)
+      st.divider()
+      
+     top = df1.sort_values("% Growth 2021-21/2019-20-Domestic", ascending=False)
+     fig5= px.bar(top,x="Name of the Monument ",y="% Growth 2021-21/2019-20-Domestic",color="% Growth 2021-21/2019-20-Domestic",color_continuous_scale="Plasma",title="📈 Domestic Visitor Growth")
+     fig5.update_layout(xaxis_tickangle=-45)
+     #st.plotly_chart(fig, use_container_width=True)
+     
+     fig6= px.bar(df1, x="Name of the Monument ", y="% Growth 2021-21/2019-20-Foreign", color="% Growth 2021-21/2019-20-Foreign", color_continuous_scale="Inferno", title="🌍 Foreign Visitor Growth")
+     fig6.update_layout(xaxis_tickangle=-45)
+     #st.plotly_chart(fig, use_container_width=True)
+     col22, col33 = st.columns(2, gap="large")
+
+     with col22:
+      st.plotly_chart(fig5, use_container_width=True)
+      st.divider()
+     with col33:
+      st.plotly_chart(fig6, use_container_width=True)
+      st.divider()
     
-     top = df1.sort_values("Domestic-2019-20", ascending=False).head(10)
+     fig7= px.bar(df1.head(10),x="Name of the Monument ",y=["Domestic-2019-20", "Foreign-2019-20"],barmode="group",title="👥 Domestic vs Foreign Visitors")
+     fig7.update_layout( xaxis_tickangle=-45,template="plotly_white")
+     #st.plotly_chart(fig, use_container_width=True)
 
-     plt.figure(figsize=(12,6))
+     corr = df1[
+    [
+        "Domestic-2019-20",
+        "Foreign-2019-20",
+        "Domestic-2020-21",
+        "Foreign-2020-21"
+    ]
+    ].corr()
+     fig8, ax = plt.subplots(figsize=(8,6))
+     sns.heatmap(corr, annot=True, cmap="YlGnBu", ax=ax)
 
-     sns.lineplot(
-    data=top,
-    x="Name of the Monument ",
-    y="Domestic-2019-20",
-    markers="o"
+     
+     col5, col6 = st.columns(2, gap="large")
+
+     with col5:
+      st.plotly_chart(fig7, use_container_width=True)
+      st.divider()
+     with col6:
+      st.pyplot(fig8)
+      st.divider()
+elif opt=="🦠 COVID-19 Impact Analysis":
+    st.title("🦠 COVID-19 Impact Analysis")
+    df1= df1[
+    ~df1["Name of the Monument "].isin(["Total", "Grand Total"])
+     ]
+   
+    domestic = pd.DataFrame({
+    "Period": ["2019-20", "2020-21"],
+    "Visitors": [
+        df1["Domestic-2019-20"].sum(),
+        df1["Domestic-2020-21"].sum()
+    ]
+})
+
+    fig1= px.bar(
+    domestic,
+    x="Period",
+    y="Visitors",
+    color="Period",
+    text="Visitors",
+    color_discrete_sequence=["#2E86DE", "#E74C3C"],
+    title="🦠 COVID-19 Impact on Domestic Visitors"
 )
 
-     plt.xticks(rotation=90)
-     plt.title("Top Monuments by Visitors")
-     st.pyplot(plt)
+    fig1.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    showlegend=False
+)
+
+    #st.plotly_chart(fig, use_container_width=True)
+    
+    foreign = pd.DataFrame({
+    "Period": ["2019-20", "2020-21"],
+    "Visitors": [
+        df1["Foreign-2019-20"].sum(),
+        df1["Foreign-2020-21"].sum()
+    ]
+})
+
+    fig2= px.bar(
+    foreign,
+    x="Period",
+    y="Visitors",
+    color="Period",
+    text="Visitors",
+    color_discrete_sequence=["#16A085", "#C0392B"],
+    title="🌍 COVID-19 Impact on Foreign Visitors"
+)
+
+    fig2.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    showlegend=False
+)
+
+    #st.plotly_chart(fig, use_container_width=True)
+    col1, col2 = st.columns(2, gap="large")
+
+    with col1:
+      st.plotly_chart(fig1, use_container_width=True)
+      st.divider()
+    with col2:
+      st.plotly_chart(fig2, use_container_width=True)
+      st.divider()
+    
+    comparison = pd.DataFrame({
+    "Period": ["2019-20", "2020-21"],
+    "Domestic": [
+        df1["Domestic-2019-20"].sum(),
+        df1["Domestic-2020-21"].sum()
+    ],
+    "Foreign": [
+        df1["Foreign-2019-20"].sum(),
+        df1["Foreign-2020-21"].sum()
+    ]
+})
+    fig = px.bar(comparison,x="Period",y=["Domestic", "Foreign"],barmode="group",title="📉 Tourism Before and During COVID-19")
+    fig.update_layout(template="plotly_white",title_x=0.5)
+
+    st.plotly_chart(fig, use_container_width=True)  
+    
+    domestic_drop = (
+    (df1["Domestic-2019-20"].sum() - df1["Domestic-2020-21"].sum())
+    / df1["Domestic-2019-20"].sum()) * 100
+
+    foreign_drop = (
+    (df1["Foreign-2019-20"].sum() - df1["Foreign-2020-21"].sum())
+    / df1["Foreign-2019-20"].sum()) * 100
+
+    col1, col2 = st.columns(2)
+
+    col1.metric(
+    "Domestic Visitor Decline",
+    f"{domestic_drop:.1f}%")
+    col2.metric(
+    "Foreign Visitor Decline",
+    f"{foreign_drop:.1f}%")
+      
+      
+      
+    df1["Domestic Loss"] = (
+    df1["Domestic-2019-20"] - df1["Domestic-2020-21"]
+)
+
+    top_loss = df1.sort_values(
+    "Domestic Loss",
+    ascending=False
+).head(10)
+
+    fig = px.bar(
+    top_loss,
+    x="Domestic Loss",
+    y="Name of the Monument ",
+    orientation="h",
+    color="Domestic Loss",
+    color_continuous_scale="Reds",
+    title="🏛 Top 10 Monuments Most Affected by COVID-19"
+)
+
+    fig.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    coloraxis_showscale=False
+)
+
+    st.plotly_chart(fig, use_container_width=True)
