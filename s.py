@@ -12,7 +12,7 @@ df.info()
 st.set_page_config(page_title="apna kmm ", page_icon="in", layout="wide")
 
 with st.sidebar:
-    opt=option_menu("Main Menu", ["Home","Dataset","Processing","Visualization","🦠 COVID-19 Impact Analysis","About"],icons=["house","table","gear","bar-chart","person"],menu_icon="cast",default_index=0)
+    opt=option_menu("Main Menu", ["Home","Dataset","Processing","Visualization","🦠 COVID-19 Impact","🔍 Search Tourist Place","About"],icons=["house","table","gear","bar-chart","🦠", "🔍","person"],menu_icon="cast",default_index=0)
 
 if opt=="Home":
 
@@ -140,17 +140,9 @@ elif opt=="Visualization":
      
      best = df["best_time_to_visit"].value_counts().reset_index()
      best.columns = ["Season", "Count"]
-     fig5= px.bar(
-    best,
-    x="Season",
-    y="Count",
-    color="Count",
-    title="Best Time to Visit"
-)
+     fig5= px.bar(best,x="Season",y="Count",color="Count",title="Best Time to Visit")
      #st.plotly_chart(fig, use_container_width=True)
      
-     
-
      dslr_sig = (
      df.groupby(["significance", "dslr_allowed"])
       .size()
@@ -208,47 +200,17 @@ elif opt=="Visualization":
      ]
      top = df1.sort_values("Domestic-2019-20", ascending=False).head(10)
 
-     fig1= px.bar(
-    top,
-    x="Domestic-2019-20",
-    y="Name of the Monument ",
-    orientation="h",
-    color="Domestic-2019-20",
-    color_continuous_scale="Turbo",
-    text="Domestic-2019-20",
-    title="🏛 Top 10 Monuments by Domestic Visitors"
-)
-
-     fig1.update_layout(
-    template="plotly_white",
-    title_x=0.5,
-    height=600,
-    coloraxis_showscale=False)
+     fig1= px.bar( top,x="Domestic-2019-20",y="Name of the Monument ",orientation="h",color="Domestic-2019-20",color_continuous_scale="Turbo",text="Domestic-2019-20",title="🏛 Top 10 Monuments by Domestic Visitors")
+     fig1.update_layout(template="plotly_white",title_x=0.5,height=600,coloraxis_showscale=False)
 
 
     # st.plotly_chart(fig1, use_container_width=True)
 
      top = df1.sort_values("Foreign-2019-20", ascending=False).head(10)
 
-     fig2= px.bar(
-    top,
-    x="Foreign-2019-20",
-    y="Name of the Monument ",
-    orientation="h",
-    color="Foreign-2019-20",
-    color_continuous_scale="Viridis",
-    text="Foreign-2019-20",
-    title="🌍 Top 10 Monuments by Foreign Visitors"
-)
+     fig2= px.bar(top,x="Foreign-2019-20",y="Name of the Monument ",orientation="h",color="Foreign-2019-20",color_continuous_scale="Viridis",text="Foreign-2019-20",title="🌍 Top 10 Monuments by Foreign Visitors")
      
-     fig2.update_layout(
-    template="plotly_white",
-    title_x=0.5,
-    height=600,
-    coloraxis_showscale=False)
-
-
-
+     fig2.update_layout(template="plotly_white",title_x=0.5,height=600,coloraxis_showscale=False)
 #st.plotly_chart(fig, use_container_width=True)
 
      col11, col22 = st.columns(2, gap="large")
@@ -319,61 +281,75 @@ elif opt=="Visualization":
      with col6:
       st.pyplot(fig8)
       st.divider()
-elif opt=="🦠 COVID-19 Impact Analysis":
+elif opt=="🦠 COVID-19 Impact":
     st.title("🦠 COVID-19 Impact Analysis")
     df1= df1[
     ~df1["Name of the Monument "].isin(["Total", "Grand Total"])
      ]
+
+
+# Total visitors
+    domestic_before = df1["Domestic-2019-20"].sum()
+    domestic_after = df1["Domestic-2020-21"].sum()
+    foreign_before = df1["Foreign-2019-20"].sum()
+    foreign_after = df1["Foreign-2020-21"].sum()
+# Percentage decline
+    domestic_decline = ((domestic_before - domestic_after) / domestic_before) * 100
+    foreign_decline = ((foreign_before - foreign_after) / foreign_before) * 100
+# Total visitor loss
+    total_loss = (domestic_before + foreign_before) - (domestic_after + foreign_after)
+
+# Most affected monument
+    df1["Visitor Loss"] = (
+    (df1["Domestic-2019-20"] + df1["Foreign-2019-20"])
+    - (df1["Domestic-2020-21"] + df1["Foreign-2020-21"]))
+
+    most_affected = df1.loc[df1["Visitor Loss"].idxmax(), "Name of the Monument "]
+
+# KPI Cards
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+     st.metric(
+        "📉 Domestic Decline",
+        f"{domestic_decline:.1f}%")
+
+    with col2:
+     st.metric(
+        "🌍 Foreign Decline",
+        f"{foreign_decline:.1f}%")
+
+    with col3:
+     st.metric(
+        "👥 Total Visitor Loss",
+        f"{int(total_loss):,}")
+
+    with col4:
+     st.metric(
+        "🏛 Most Affected Monument",
+        most_affected)
    
     domestic = pd.DataFrame({
     "Period": ["2019-20", "2020-21"],
     "Visitors": [
         df1["Domestic-2019-20"].sum(),
         df1["Domestic-2020-21"].sum()
-    ]
-})
+    ]})
 
-    fig1= px.bar(
-    domestic,
-    x="Period",
-    y="Visitors",
-    color="Period",
-    text="Visitors",
-    color_discrete_sequence=["#2E86DE", "#E74C3C"],
-    title="🦠 COVID-19 Impact on Domestic Visitors"
-)
-
-    fig1.update_layout(
-    template="plotly_white",
-    title_x=0.5,
-    showlegend=False
-)
+    fig1= px.bar( domestic, x="Period", y="Visitors", color="Period", text="Visitors", color_discrete_sequence=["#2E86DE", "#E74C3C"], title="🦠 COVID-19 Impact on Domestic Visitors")
+    fig1.update_layout(template="plotly_white",title_x=0.5,showlegend=False)
 
     #st.plotly_chart(fig, use_container_width=True)
-    
     foreign = pd.DataFrame({
     "Period": ["2019-20", "2020-21"],
     "Visitors": [
         df1["Foreign-2019-20"].sum(),
         df1["Foreign-2020-21"].sum()
-    ]
-})
+    ]})
 
-    fig2= px.bar(
-    foreign,
-    x="Period",
-    y="Visitors",
-    color="Period",
-    text="Visitors",
-    color_discrete_sequence=["#16A085", "#C0392B"],
-    title="🌍 COVID-19 Impact on Foreign Visitors"
-)
+    fig2= px.bar(foreign,x="Period",y="Visitors",color="Period",text="Visitors",color_discrete_sequence=["#16A085", "#C0392B"],title="🌍 COVID-19 Impact on Foreign Visitors")
 
-    fig2.update_layout(
-    template="plotly_white",
-    title_x=0.5,
-    showlegend=False
-)
+    fig2.update_layout(template="plotly_white",title_x=0.5,showlegend=False)
 
     #st.plotly_chart(fig, use_container_width=True)
     col1, col2 = st.columns(2, gap="large")
@@ -394,11 +370,9 @@ elif opt=="🦠 COVID-19 Impact Analysis":
     "Foreign": [
         df1["Foreign-2019-20"].sum(),
         df1["Foreign-2020-21"].sum()
-    ]
-})
+    ]})
     fig = px.bar(comparison,x="Period",y=["Domestic", "Foreign"],barmode="group",title="📉 Tourism Before and During COVID-19")
     fig.update_layout(template="plotly_white",title_x=0.5)
-
     st.plotly_chart(fig, use_container_width=True)  
     
     domestic_drop = (
@@ -410,39 +384,105 @@ elif opt=="🦠 COVID-19 Impact Analysis":
     / df1["Foreign-2019-20"].sum()) * 100
 
     col1, col2 = st.columns(2)
-
     col1.metric(
     "Domestic Visitor Decline",
     f"{domestic_drop:.1f}%")
     col2.metric(
     "Foreign Visitor Decline",
     f"{foreign_drop:.1f}%")
-      
-      
-      
+  
     df1["Domestic Loss"] = (
-    df1["Domestic-2019-20"] - df1["Domestic-2020-21"]
-)
-
-    top_loss = df1.sort_values(
-    "Domestic Loss",
-    ascending=False
-).head(10)
-
-    fig = px.bar(
-    top_loss,
-    x="Domestic Loss",
-    y="Name of the Monument ",
-    orientation="h",
-    color="Domestic Loss",
-    color_continuous_scale="Reds",
-    title="🏛 Top 10 Monuments Most Affected by COVID-19"
-)
-
-    fig.update_layout(
-    template="plotly_white",
-    title_x=0.5,
-    coloraxis_showscale=False
-)
-
+    df1["Domestic-2019-20"] - df1["Domestic-2020-21"])
+    top_loss = df1.sort_values("Domestic Loss",ascending=False).head(10)
+    fig = px.bar(top_loss,x="Domestic Loss",y="Name of the Monument ",orientation="h",color="Domestic Loss",color_continuous_scale="Reds",title="🏛 Top 10 Monuments Most Affected by COVID-19")
+    fig.update_layout(template="plotly_white",title_x=0.5,coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
+elif opt=="🔍 Search Tourist Place":
+    st.header("🔍 Search Tourist Place")
+
+    search_by = st.selectbox(
+    "Search By",
+    ["State", "City", "Type"]
+)
+
+    if search_by == "State":
+     option = st.selectbox("Select State", sorted(df["state"].unique()))
+     result = df[df["state"] == option]
+
+    elif search_by == "City":
+     option = st.selectbox("Select City", sorted(df["city"].unique()))
+     result = df[df["city"] == option]
+
+    elif search_by == "Type":
+     option = st.selectbox("Select Type", sorted(df["type"].unique()))
+     result = df[df["type"] == option]
+
+    st.success(f"Found {len(result)} Tourist Place(s)")    
+
+
+    for _, row in result.iterrows():
+
+      with st.container(border=True):
+
+        st.subheader(f"📍 {row['name']}")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("⭐ Rating", row["google_review_rating"])
+            st.metric("📝 Reviews", f"{int(row['number_of_google_review_in_lakhs']):,}")
+
+        with col2:
+            st.metric("💰 Entrance Fee", f"₹ {row['entrance_fee_in_inr']}")
+            st.metric("📷 DSLR", row["dslr_allowed"])
+
+        with col3:
+            st.metric("🗺 State", row["state"])
+            st.metric("🏙 City", row["city"])
+
+        st.markdown("---")
+
+        left, right = st.columns(2)
+
+        with left:
+            st.write("### 📋 Details")
+            st.write(f"**🏛 Type:** {row['type']}")
+            st.write(f"**🌳 Significance:** {row['significance']}")
+
+        with right:
+            st.write("### ℹ️ Visitor Information")
+            st.write(f"**📅 Best Time:** {row['best_time_to_visit']}")
+            st.write(f"**🛫 Nearby Airport:** {row['airport_with_50km_radius']}")
+
+    st.write("")
+
+
+
+
+
+
+
+
+    st.header("🏛 Search Monument")
+
+    monument = st.selectbox(
+    "Select Monument",
+    sorted(df1["Name of the Monument "].unique())
+)
+
+    result = df1[df1["Name of the Monument "] == monument]
+
+    st.dataframe(result, use_container_width=True)
+    row = result.iloc[0]
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+     st.metric("🗺 Circle", row["Circle"])
+     st.metric("👥 Domestic Visitors", f"{int(row['Domestic-2019-20']):,}")
+     st.metric("🌍 Foreign Visitors", f"{int(row['Foreign-2019-20']):,}")
+
+    with col2:
+     st.metric("🏛 Monument", row["Name of the Monument "])
+     st.metric("📉 Domestic Growth", f"{row['% Growth 2021-21/2019-20-Domestic']}%")
+     st.metric("📉 Foreign Growth", f"{row['% Growth 2021-21/2019-20-Foreign']}%")
