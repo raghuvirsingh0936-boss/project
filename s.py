@@ -8,7 +8,7 @@ df=pd.read_csv("raghu.csv")
 df.info()
 df1=pd.read_csv("d2.csv")
 df.info()
-st.set_page_config(page_title="apna kmm ", page_icon="in", layout="wide")
+st.set_page_config(page_title="PROJECT", page_icon=":fire:", layout="wide")
 st.markdown("""
 <style>
 /* Remove top padding from the main content */
