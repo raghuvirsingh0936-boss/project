@@ -429,7 +429,7 @@ hr{
     <h2 style='text-align:center;
                color:#FB8500;
                font-weight:800;'>
-   🗺 India Tourism Analytics
+    🗺 India Tourism Analytics
     </h2>
     """, unsafe_allow_html=True)
     st.markdown("---")
@@ -883,10 +883,32 @@ elif opt=="COVID-19 Impact":
         df1["Domestic-2020-21"].sum()
     ]})
 
-    fig1= px.bar( domestic, x="Period", y="Visitors", color="Period", text="Visitors", color_discrete_sequence=["#2E86DE", "#E74C3C"], title="🦠 COVID-19 Impact on Domestic Visitors")
-    fig1.update_layout(template="plotly_white",title_x=0.5,showlegend=False)
-
+    #fig1= px.bar( domestic, x="Period", y="Visitors", color="Period", text="Visitors", color_discrete_sequence=["#2E86DE", "#E74C3C"], title="🦠 COVID-19 Impact on Domestic Visitors")
+    #fig1.update_layout(template="plotly_white",title_x=0.5,showlegend=False)
     #st.plotly_chart(fig, use_container_width=True)
+    fig1 = px.pie(
+    domestic,
+    names="Period",
+    values="Visitors",
+    hole=0.5,
+    color="Period",
+    color_discrete_sequence=["#2E86DE", "#E74C3C"],
+    title="🦠 COVID-19 Impact on Domestic Visitors"
+)
+
+    fig1.update_traces(
+    textinfo="percent+label",
+    textfont_size=14
+)
+
+    fig1.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    legend_title="Period"
+)
+
+
+    
     foreign = pd.DataFrame({
     "Period": ["2019-20", "2020-21"],
     "Visitors": [
@@ -917,9 +939,25 @@ elif opt=="COVID-19 Impact":
         df1["Foreign-2019-20"].sum(),
         df1["Foreign-2020-21"].sum()
     ]})
-    fig = px.bar(comparison,x="Period",y=["Domestic", "Foreign"],barmode="group",title="📉 Tourism Before and During COVID-19")
-    fig.update_layout(template="plotly_white",title_x=0.5)
-    st.plotly_chart(fig, use_container_width=True)  
+    #fig = px.bar(comparison,x="Period",y=["Domestic", "Foreign"],barmode="group",title="📉 Tourism Before and During COVID-19")
+    #fig.update_layout(template="plotly_white",title_x=0.5)
+    #st.plotly_chart(fig, use_container_width=True)  
+    fig = px.bar(
+    comparison,
+    x="Period",
+    y=["Domestic", "Foreign"],
+    barmode="group",
+    color_discrete_sequence=["#1E88E5", "#FF6B35"],
+    title="📉 Tourism Before and During COVID-19"
+)
+
+    fig.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    legend_title="Visitor Type"
+)
+
+    st.plotly_chart(fig, use_container_width=True)
     
     domestic_drop = (
     (df1["Domestic-2019-20"].sum() - df1["Domestic-2020-21"].sum())
@@ -940,9 +978,27 @@ elif opt=="COVID-19 Impact":
     df1["Domestic Loss"] = (
     df1["Domestic-2019-20"] - df1["Domestic-2020-21"])
     top_loss = df1.sort_values("Domestic Loss",ascending=False).head(10)
-    fig = px.bar(top_loss,x="Domestic Loss",y="Name of the Monument ",orientation="h",color="Domestic Loss",color_continuous_scale="Reds",title="🏛 Top 10 Monuments Most Affected by COVID-19")
-    fig.update_layout(template="plotly_white",title_x=0.5,coloraxis_showscale=False)
+    #fig = px.bar(top_loss,x="Domestic Loss",y="Name of the Monument ",orientation="h",color="Domestic Loss",color_continuous_scale="Reds",title="🏛 Top 10 Monuments Most Affected by COVID-19")
+    #fig.update_layout(template="plotly_white",title_x=0.5,coloraxis_showscale=False)
+    #st.plotly_chart(fig, use_container_width=True)
+    
+    fig = px.funnel(
+    top_loss,
+    y="Name of the Monument ",
+    x="Domestic Loss",
+    color="Domestic Loss",
+   
+    title="🏛 Top 10 Monuments Most Affected by COVID-19"
+)
+
+    fig.update_layout(
+    template="plotly_white",
+    title_x=0.5,
+    coloraxis_showscale=False
+)
+
     st.plotly_chart(fig, use_container_width=True)
+    
 elif opt=="Search Tourist Place":
     st.header("🔍 Search Tourist Place")
 
@@ -1198,5 +1254,7 @@ tourism trends across different states and monuments.
     col2.metric("🏛 Monuments", len(df1))
     col3.metric("🗺 States", 28)
     col4.metric("📊 Charts", "15+")
+
+   
 
    
