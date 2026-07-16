@@ -429,7 +429,7 @@ hr{
     <h2 style='text-align:center;
                color:#FB8500;
                font-weight:800;'>
-    🇮🇳 India Tourism Analytics
+   🗺 India Tourism Analytics
     </h2>
     """, unsafe_allow_html=True)
     st.markdown("---")
